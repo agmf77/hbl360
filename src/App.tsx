@@ -33,8 +33,10 @@ import { User as FirebaseUser } from 'firebase/auth';
 
 // Components
 import { Header } from './components/Header';
+import { Sidebar } from './components/Sidebar';
 import { LiveTicker } from './components/LiveTicker';
 import { DashboardView } from './components/DashboardView';
+import { EmployeesView } from './components/EmployeesView';
 import { LoansView } from './components/LoansView';
 import { AddLoanModal } from './components/AddLoanModal';
 import { RepaymentsView } from './components/RepaymentsView';
@@ -67,6 +69,12 @@ export default function App() {
   const [isFirestoreReady, setIsFirestoreReady] = useState(false);
 
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024;
+    }
+    return true;
+  });
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
@@ -565,298 +573,202 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
-      {/* Top Header */}
-      <Header
-        currentRole={currentUser}
-        authUser={authUser}
-        onRoleChange={handleRoleChange}
-        employees={employees}
-        settings={settings}
-        isConnected={isConnected}
-        latencyMs={latencyMs}
-        activeUsers={activeUsers}
-        soundEnabled={soundEnabled}
-        onToggleSound={() => setSoundEnabled(!soundEnabled)}
-        onSimulateTest={handleSimulateTest}
-        isSimulating={isSimulating}
-        onSearchOpen={() => setSearchModalOpen(true)}
-        onPrintScreen={() => window.print()}
-        isFirestoreReady={isFirestoreReady}
-        onOpenPbsSelector={() => setPbsSelectorOpen(true)}
+    <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900 font-sans">
+      {/* Left Collapsible Sidebar matching uploaded screenshot */}
+      <Sidebar
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+        }}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        transferredCount={loans.filter(l => l.loanSource === 'other').length}
+        pendingRemittanceCount={stats?.pendingRemittanceCount || 0}
+        recycleCount={recycleItems.length}
+        dbFileName="database/pbs_house_loan.db"
       />
-
-      {/* Realtime Live Ticker Bar */}
-      <LiveTicker
-        events={liveEvents}
-        onOpenFeed={() => setActiveTab('dashboard')}
-      />
-
-      {/* Primary Navigation Tabs */}
-      <nav className="bg-white border-b border-slate-200 sticky top-14.5 z-30 shadow-2xs no-print">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-1 overflow-x-auto py-1.5 scrollbar-none text-xs font-medium text-slate-600">
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            className={`py-2 px-3 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === 'dashboard' 
-                ? 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200' 
-                : 'hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5 text-emerald-600" />
-            <span>লাইভ ড্যাশবোর্ড</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('loans')}
-            className={`py-2 px-3 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === 'loans' 
-                ? 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200' 
-                : 'hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <Building2 className="w-3.5 h-3.5 text-slate-500" />
-            <span>গৃহ ঋণ রেজিস্টার</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('repayments')}
-            className={`py-2 px-3 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === 'repayments' 
-                ? 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200' 
-                : 'hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <Coins className="w-3.5 h-3.5 text-slate-500" />
-            <span>মাসিক কিস্তি কর্তন</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('provisions')}
-            className={`py-2 px-3 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === 'provisions' 
-                ? 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200' 
-                : 'hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <TrendingUp className="w-3.5 h-3.5 text-slate-500" />
-            <span>সুদ প্রভিশন (৭%)</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('transferred')}
-            className={`py-2 px-3 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === 'transferred' 
-                ? 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200' 
-                : 'hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <span>বদলিকৃত ঋণ ও তাগাদা</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('remittances')}
-            className={`py-2 px-3 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === 'remittances' 
-                ? 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200' 
-                : 'hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <Send className="w-3.5 h-3.5 text-slate-500" />
-            <span>ইন্টার-পবিস রেমিট্যান্স</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('fiscal_year')}
-            className={`py-2 px-3 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === 'fiscal_year' 
-                ? 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200' 
-                : 'hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <BarChart3 className="w-3.5 h-3.5 text-slate-500" />
-            <span>অর্থবছর তুলনামূলক</span>
-          </button>
-
-          {currentUser.role === 'employee' && (
-            <button
-              onClick={() => setActiveTab('employee_portal')}
-              className={`py-2 px-3 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-                activeTab === 'employee_portal' 
-                  ? 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200' 
-                  : 'hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <UserCircle2 className="w-3.5 h-3.5 text-blue-600" />
-            <span>আমার ঋণ পোর্টাল</span>
-          </button>
-          )}
-
-          {currentUser.role !== 'employee' && (
-            <>
-              <button
-                onClick={() => setActiveTab('recycle_bin')}
-                className={`py-2 px-3 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-                  activeTab === 'recycle_bin' 
-                    ? 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200' 
-                    : 'hover:text-slate-900 hover:bg-slate-100'
-                }`}
-              >
-                <Trash2 className="w-3.5 h-3.5 text-slate-500" />
-                <span>রিসাইকেল বিন ({recycleItems.length})</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('audit_logs')}
-                className={`py-2 px-3 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-                  activeTab === 'audit_logs' 
-                    ? 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200' 
-                    : 'hover:text-slate-900 hover:bg-slate-100'
-                }`}
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
-                <span>অডিট লগ</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('settings')}
-                className={`py-2 px-3 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-                  activeTab === 'settings' 
-                    ? 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200' 
-                    : 'hover:text-slate-900 hover:bg-slate-100'
-                }`}
-              >
-                <Settings className="w-3.5 h-3.5 text-slate-500" />
-                <span>সেটিংস</span>
-              </button>
-            </>
-          )}
-        </div>
-      </nav>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
-        {activeTab === 'dashboard' && (
-          <DashboardView
-            stats={stats}
-            loans={loans}
-            liveEvents={liveEvents}
-            currentUser={currentUser}
-            onNavigate={setActiveTab}
-            onRunBatchPayroll={handleRunBatchPayroll}
-            onRunProvisions={() => handleRunProvisions('2026-10')}
-            onOpenNewAdvice={() => setActiveTab('remittances')}
-            onSimulateTest={handleSimulateTest}
-            isProcessing={isProcessing}
-          />
-        )}
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+        {/* Top Header */}
+        <Header
+          currentRole={currentUser}
+          authUser={authUser}
+          onRoleChange={handleRoleChange}
+          employees={employees}
+          settings={settings}
+          isConnected={isConnected}
+          latencyMs={latencyMs}
+          activeUsers={activeUsers}
+          soundEnabled={soundEnabled}
+          onToggleSound={() => setSoundEnabled(!soundEnabled)}
+          onSimulateTest={handleSimulateTest}
+          isSimulating={isSimulating}
+          onSearchOpen={() => setSearchModalOpen(true)}
+          onPrintScreen={() => window.print()}
+          isFirestoreReady={isFirestoreReady}
+          onOpenPbsSelector={() => setPbsSelectorOpen(true)}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          isSidebarOpen={isSidebarOpen}
+        />
 
-        {activeTab === 'loans' && (
-          <LoansView
-            loans={loans}
-            currentUser={currentUser}
-            onOpenAddLoan={() => setAddLoanModalOpen(true)}
-            onOpenLedger={(loanId) => setSelectedLedgerLoanId(loanId)}
-            onOpenRepayment={(loanId) => {
-              setRepaymentModalLoanId(loanId);
-              setRepaymentModalOpen(true);
-            }}
-            onToggleStatus={handleToggleLoanStatus}
-            onDeleteLoan={handleDeleteLoan}
-          />
-        )}
+        {/* Realtime Live Ticker Bar */}
+        <LiveTicker
+          events={liveEvents}
+          onOpenFeed={() => setActiveTab('dashboard')}
+        />
 
-        {activeTab === 'repayments' && (
-          <RepaymentsView
-            repayments={repayments}
-            loans={loans}
-            currentUser={currentUser}
-            onOpenNewRepayment={() => {
-              setRepaymentModalLoanId(undefined);
-              setRepaymentModalOpen(true);
-            }}
-            onRunBatchPayroll={handleRunBatchPayroll}
-            onOpenLedger={(loanId) => setSelectedLedgerLoanId(loanId)}
-            isProcessing={isProcessing}
-          />
-        )}
+        {/* Scrollable View Area */}
+        <main className="flex-1 overflow-y-auto w-full px-4 sm:px-6 py-5">
+          {activeTab === 'dashboard' && (
+            <DashboardView
+              stats={stats}
+              loans={loans}
+              liveEvents={liveEvents}
+              currentUser={currentUser}
+              onNavigate={setActiveTab}
+              onRunBatchPayroll={handleRunBatchPayroll}
+              onRunProvisions={() => handleRunProvisions('2026-10')}
+              onOpenNewAdvice={() => setActiveTab('remittances')}
+              onSimulateTest={handleSimulateTest}
+              onOpenAddLoan={() => setAddLoanModalOpen(true)}
+              onRefresh={refreshAllData}
+              isProcessing={isProcessing}
+            />
+          )}
 
-        {activeTab === 'provisions' && (
-          <ProvisionsView
-            provisions={provisions}
-            loans={loans}
-            currentUser={currentUser}
-            onRunProvisions={handleRunProvisions}
-            isProcessing={isProcessing}
-          />
-        )}
+          {activeTab === 'employees' && (
+            <EmployeesView
+              employees={employees}
+              loans={loans}
+              currentUser={currentUser}
+              onOpenLedger={(loanId) => setSelectedLedgerLoanId(loanId)}
+              onRefresh={refreshAllData}
+            />
+          )}
 
-        {activeTab === 'transferred' && (
-          <TransferredLoansView
-            loans={loans}
-            demandNotices={demandNotices}
-            settings={settings}
-            currentUser={currentUser}
-            onCreateDemandNotice={handleCreateDemandNotice}
-            onOpenLedger={(loanId) => setSelectedLedgerLoanId(loanId)}
-            onOpenRepayment={(loanId) => {
-              setRepaymentModalLoanId(loanId);
-              setRepaymentModalOpen(true);
-            }}
-            isProcessing={isProcessing}
-          />
-        )}
+          {activeTab === 'loans' && (
+            <LoansView
+              loans={loans}
+              currentUser={currentUser}
+              onOpenAddLoan={() => setAddLoanModalOpen(true)}
+              onOpenLedger={(loanId) => setSelectedLedgerLoanId(loanId)}
+              onOpenRepayment={(loanId) => {
+                setRepaymentModalLoanId(loanId);
+                setRepaymentModalOpen(true);
+              }}
+              onToggleStatus={handleToggleLoanStatus}
+              onDeleteLoan={handleDeleteLoan}
+              onRefresh={refreshAllData}
+            />
+          )}
 
-        {activeTab === 'remittances' && (
-          <RemittancesView
-            bankAdvices={bankAdvices}
-            loans={loans}
-            repayments={repayments}
-            settings={settings}
-            currentUser={currentUser}
-            onCreateAdvice={handleCreateBankAdvice}
-            onUpdateStatus={handleUpdateBankAdviceStatus}
-            isProcessing={isProcessing}
-          />
-        )}
+          {activeTab === 'repayments' && (
+            <RepaymentsView
+              repayments={repayments}
+              loans={loans}
+              currentUser={currentUser}
+              onOpenNewRepayment={() => {
+                setRepaymentModalLoanId(undefined);
+                setRepaymentModalOpen(true);
+              }}
+              onRunBatchPayroll={handleRunBatchPayroll}
+              onOpenLedger={(loanId) => setSelectedLedgerLoanId(loanId)}
+              isProcessing={isProcessing}
+            />
+          )}
 
-        {activeTab === 'fiscal_year' && (
-          <FiscalYearView settings={settings} />
-        )}
+          {activeTab === 'provisions' && (
+            <ProvisionsView
+              provisions={provisions}
+              loans={loans}
+              currentUser={currentUser}
+              onRunProvisions={handleRunProvisions}
+              isProcessing={isProcessing}
+            />
+          )}
 
-        {activeTab === 'employee_portal' && (
-          <EmployeePortalView
-            currentUser={currentUser}
-            loans={loans}
-            repayments={repayments}
-            onOpenLedger={(loanId) => setSelectedLedgerLoanId(loanId)}
-          />
-        )}
+          {activeTab === 'transferred' && (
+            <TransferredLoansView
+              loans={loans}
+              demandNotices={demandNotices}
+              settings={settings}
+              currentUser={currentUser}
+              onCreateDemandNotice={handleCreateDemandNotice}
+              onOpenLedger={(loanId) => setSelectedLedgerLoanId(loanId)}
+              onOpenRepayment={(loanId) => {
+                setRepaymentModalLoanId(loanId);
+                setRepaymentModalOpen(true);
+              }}
+              isProcessing={isProcessing}
+            />
+          )}
 
-        {activeTab === 'recycle_bin' && (
-          <RecycleBinView
-            items={recycleItems}
-            currentUser={currentUser}
-            onRestore={handleRestoreRecycleItem}
-            isProcessing={isProcessing}
-          />
-        )}
+          {(activeTab === 'remittances' || activeTab === 'advices') && (
+            <RemittancesView
+              bankAdvices={bankAdvices}
+              loans={loans}
+              repayments={repayments}
+              settings={settings}
+              currentUser={currentUser}
+              onCreateAdvice={handleCreateBankAdvice}
+              onUpdateStatus={handleUpdateBankAdviceStatus}
+              isProcessing={isProcessing}
+            />
+          )}
 
-        {activeTab === 'audit_logs' && (
-          <AuditLogView />
-        )}
+          {activeTab === 'fiscal_year' && (
+            <FiscalYearView settings={settings} />
+          )}
 
-        {activeTab === 'settings' && (
-          <SettingsView
-            settings={settings}
-            currentUser={currentUser}
-            onSaveSettings={handleSaveSettings}
-            isProcessing={isProcessing}
-            onOpenPbsSelector={() => setPbsSelectorOpen(true)}
-            pbsList={pbsList}
-          />
-        )}
-      </main>
+          {activeTab === 'employee_portal' && (
+            <EmployeePortalView
+              currentUser={currentUser}
+              loans={loans}
+              repayments={repayments}
+              onOpenLedger={(loanId) => setSelectedLedgerLoanId(loanId)}
+            />
+          )}
+
+          {activeTab === 'recycle_bin' && (
+            <RecycleBinView
+              items={recycleItems}
+              currentUser={currentUser}
+              onRestore={handleRestoreRecycleItem}
+              isProcessing={isProcessing}
+            />
+          )}
+
+          {activeTab === 'audit_logs' && (
+            <AuditLogView />
+          )}
+
+          {activeTab === 'settings' && (
+            <SettingsView
+              settings={settings}
+              currentUser={currentUser}
+              onSaveSettings={handleSaveSettings}
+              isProcessing={isProcessing}
+              onOpenPbsSelector={() => setPbsSelectorOpen(true)}
+              pbsList={pbsList}
+            />
+          )}
+
+          {/* Integrated Footer at bottom of scrollable content */}
+          <footer className="bg-white border-t border-slate-200 py-3.5 px-4 sm:px-6 text-xs text-slate-500 no-print mt-8 rounded-xl shadow-2xs">
+            <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+              <div>
+                © {new Date().getFullYear()} {settings.boardNameBn} · <span className="font-semibold text-slate-700">{settings.pbsNameBn}</span>
+              </div>
+              <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 text-[11px]">
+                <span>অর্থ ও হিসাব বিভাগ</span>
+                <span>·</span>
+                <span className="text-emerald-700 font-medium">Firestore ক্লাউড পারসিস্টেন্স সক্রিয়</span>
+              </div>
+            </div>
+          </footer>
+        </main>
+      </div>
 
       {/* Modals */}
       <PbsSelectorModal
@@ -909,20 +821,6 @@ export default function App() {
           }}
         />
       )}
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-4 px-6 text-xs text-slate-500 text-center no-print mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div>
-            © {new Date().getFullYear()} {settings.boardNameBn} · {settings.pbsNameBn}
-          </div>
-          <div className="flex items-center gap-3">
-            <span>অর্থ ও হিসাব বিভাগ</span>
-            <span>·</span>
-            <span className="text-emerald-700 font-medium">Firestore ক্লাউড পারসিস্টেন্স সক্রিয়</span>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

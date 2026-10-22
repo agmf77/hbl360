@@ -1,4 +1,6 @@
 import { Router, Request, Response } from 'express';
+import path from 'path';
+import * as XLSX from 'xlsx';
 import { db } from './db';
 import { ALL_80_PBS } from './allPbsData';
 
@@ -239,6 +241,82 @@ router.delete('/employees/:id', (req: Request, res: Response) => {
   }
 });
 
+// Employee Template Download (hbl360 standard)
+router.get('/employees/import-template', (req: Request, res: Response) => {
+  const filePath = path.join(process.cwd(), 'public', 'templates', 'employee_import_template.xlsx');
+  res.download(filePath, 'employee_import_template.xlsx');
+});
+
+// Employee Excel Import (hbl360 standard)
+router.post('/employees/import', (req: Request, res: Response) => {
+  try {
+    const { base64, currentUser } = req.body;
+    if (!base64) {
+      return res.status(400).json({ success: false, message: 'Excel ফাইলের ডাটা প্রদান করুন।' });
+    }
+    const buffer = Buffer.from(base64, 'base64');
+    const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true });
+    const sheetName = workbook.SheetNames[0];
+    const rows: any[] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: '' });
+
+    if (!rows || rows.length === 0) {
+      return res.status(400).json({ success: false, message: 'Excel ফাইলে কোনো তথ্য পাওয়া যায়নি।' });
+    }
+
+    let importedCount = 0;
+    const skipped: string[] = [];
+    const errors: string[] = [];
+
+    for (const row of rows) {
+      const empCodeRaw = String(row['emp_code'] || row['employee_code'] || row['পে আইডি'] || row['পে-আইডি'] || '').trim();
+      const empCode = /^\d{1,4}$/.test(empCodeRaw) ? empCodeRaw.padStart(4, '0') : empCodeRaw;
+      const name = String(row['name'] || row['নাম'] || row['employee_name'] || '').trim();
+      const designation = String(row['designation'] || row['পদবী'] || row['পদবি'] || 'কর্মচারী').trim();
+      const department = String(row['department'] || row['বিভাগ'] || row['শাখা'] || 'সাধারণ').trim();
+      const presentPbs = String(row['current_posting_pbs'] || row['বর্তমান পোস্টিং পবিস'] || db.getSettings().pbsNameBn).trim();
+      const mobile = String(row['mobile'] || row['মোবাইল'] || row['phone'] || '').trim();
+      const email = String(row['email'] || row['ইমেইল'] || '').trim();
+
+      if (!empCode || !name) {
+        errors.push(`সারিতে পে-আইডি বা নাম অনুপস্থিত`);
+        continue;
+      }
+
+      if (db.getEmployeeByPayId(empCode)) {
+        skipped.push(empCode);
+        continue;
+      }
+
+      db.createEmployee({
+        payId: empCode,
+        nameBn: name,
+        nameEn: name,
+        designation,
+        department,
+        presentPbs,
+        phone: mobile,
+        email,
+        role: 'employee',
+        password: 'password123',
+        isActive: true
+      }, currentUser || 'admin');
+
+      importedCount++;
+    }
+
+    res.json({
+      success: true,
+      message: `${importedCount} জন কর্মচারী সফলভাবে আমদানি করা হয়েছে।`,
+      importedCount,
+      skippedCount: skipped.length,
+      skipped,
+      errors
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // --- Loans ---
 router.get('/loans', (req: Request, res: Response) => {
   const { employeeId, payId, source, status } = req.query;
@@ -328,6 +406,104 @@ router.delete('/loans/:id', (req: Request, res: Response) => {
     const success = db.deleteLoan(req.params.id, (req.query.user as string) || 'accounts');
     if (!success) return res.status(404).json({ success: false, message: 'ঋণ পাওয়া যায়নি।' });
     res.json({ success: true, message: 'ঋণ সফলভাবে রিসাইকেল বিনে পাঠানো হয়েছে।' });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Loan Opening Balance Template Download (hbl360 standard)
+router.get('/loans/import-template', (req: Request, res: Response) => {
+  const filePath = path.join(process.cwd(), 'public', 'templates', 'loan_opening_balance_import_template.xlsx');
+  res.download(filePath, 'loan_opening_balance_import_template.xlsx');
+});
+
+// Loan Opening Balance Excel Import (hbl360 standard)
+router.post('/loans/import', (req: Request, res: Response) => {
+  try {
+    const { base64, currentUser } = req.body;
+    if (!base64) {
+      return res.status(400).json({ success: false, message: 'Excel ফাইলের ডাটা প্রদান করুন।' });
+    }
+    const buffer = Buffer.from(base64, 'base64');
+    const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true });
+    const sheetName = workbook.SheetNames[0];
+    const rows: any[] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: '' });
+
+    if (!rows || rows.length === 0) {
+      return res.status(400).json({ success: false, message: 'Excel ফাইলে কোনো তথ্য পাওয়া যায়নি।' });
+    }
+
+    let importedCount = 0;
+    const skipped: string[] = [];
+    const errors: string[] = [];
+
+    for (const row of rows) {
+      const empCodeRaw = String(row['employee_code'] || row['emp_code'] || row['পে আইডি'] || '').trim();
+      const empCode = /^\d{1,4}$/.test(empCodeRaw) ? empCodeRaw.padStart(4, '0') : empCodeRaw;
+      const loanNo = String(row['loan_no'] || row['ঋণ নম্বর'] || '').trim();
+      const loanLotName = String(row['loan_lot_name'] || row['লট'] || '১ম বরাদ্দ').trim();
+      const loanSourceType = String(row['loan_source_type'] || 'OWN_PBS').toUpperCase();
+      const isOther = loanSourceType === 'OTHER_PBS' || loanSourceType === 'OTHER';
+      const originPbs = String(row['origin_pbs_name'] || (isOther ? 'অন্যান্য পবিস' : db.getSettings().pbsNameBn)).trim();
+      const sanctionNo = String(row['sanction_no'] || `SNC-${loanNo}`).trim();
+      const sanctionDate = String(row['sanction_date'] || '2024-01-01').slice(0, 10);
+      const disbursementDate = String(row['disbursement_date'] || sanctionDate).slice(0, 10);
+      const sanctionAmount = Number(row['sanction_amount']) || 1200000;
+      const disbursedAmount = Number(row['disbursed_amount']) || sanctionAmount;
+      const principalBalance = Number(row['opening_principal_balance'] ?? disbursedAmount);
+      const interestBalance = isOther ? 0 : Number(row['opening_interest_balance'] || 0);
+      const monthlyInstallment = Number(row['monthly_installment']) || 15000;
+      const openingBalanceDate = String(row['opening_balance_date'] || disbursementDate).slice(0, 10);
+
+      if (!empCode || !loanNo) {
+        errors.push('সারিতে পে-আইডি বা ঋণ নম্বর নেই');
+        continue;
+      }
+
+      const emp = db.getEmployeeByPayId(empCode);
+      if (!emp) {
+        errors.push(`পে-আইডি ${empCode} এর কর্মচারী খুঁজে পাওয়া যায়নি`);
+        continue;
+      }
+
+      const existingLoans = db.getLoans();
+      if (existingLoans.some(l => l.loanNo === loanNo)) {
+        skipped.push(loanNo);
+        continue;
+      }
+
+      db.createLoan({
+        employeeId: emp.id,
+        payId: emp.payId,
+        employeeNameBn: emp.nameBn,
+        employeeDesignation: emp.designation,
+        loanNo,
+        loanSource: isOther ? 'other' : 'own',
+        lendingPbs: isOther ? originPbs : db.getSettings().pbsNameBn,
+        allocationNo: loanLotName,
+        disbursementAmount: disbursedAmount,
+        disbursementDate,
+        interestRatePre2020: 8,
+        interestRatePost2020: 7,
+        monthlyInstallment,
+        principalBalance,
+        interestBalance,
+        advanceBalance: 0,
+        asOfDate: openingBalanceDate,
+        status: 'active'
+      }, currentUser || 'admin');
+
+      importedCount++;
+    }
+
+    res.json({
+      success: true,
+      message: `${importedCount} টি ঋণের প্রারম্ভিক স্থিতি সফলভাবে আমদানি করা হয়েছে।`,
+      importedCount,
+      skippedCount: skipped.length,
+      skipped,
+      errors
+    });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -478,6 +654,108 @@ router.post('/demand-notices', (req: Request, res: Response) => {
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
   }
+});
+
+// Transferred Loans Post-Collection (hbl360 compatible endpoint)
+router.post('/transferred-loans/post-collection', (req: Request, res: Response) => {
+  try {
+    const {
+      loan_id,
+      source_pbs_name,
+      receipt_date,
+      voucher_no,
+      months,
+      monthly_amounts,
+      total_amount,
+      remarks,
+      currentUser
+    } = req.body;
+
+    if (!loan_id) {
+      return res.status(400).json({ success: false, message: 'ঋণ হিসাব নির্বাচন করুন।' });
+    }
+
+    const loan = db.getLoanById(loan_id);
+    if (!loan) {
+      return res.status(404).json({ success: false, message: 'ঋণ রেকর্ডটি পাওয়া যায়নি।' });
+    }
+
+    let parsedMonths: string[] = [];
+    if (Array.isArray(months)) {
+      parsedMonths = months.map((m: any) => String(m).trim()).filter(Boolean);
+    } else if (typeof months === 'string') {
+      parsedMonths = months.split(',').map((m: any) => m.trim()).filter(Boolean);
+    }
+
+    if (parsedMonths.length === 0) {
+      return res.status(400).json({ success: false, message: 'যে যে মাসের কিস্তি পরিশোধ হচ্ছে তা নির্বাচন করুন।' });
+    }
+
+    const totalAmt = Number(total_amount);
+    const amtPerMonth = Math.round(totalAmt / parsedMonths.length);
+
+    const items = parsedMonths.map((m, idx) => {
+      const monthAmt = Array.isArray(monthly_amounts) && monthly_amounts[idx]
+        ? Number(monthly_amounts[idx])
+        : amtPerMonth;
+
+      return {
+        loanId: loan.id,
+        repaymentMonth: m,
+        repaymentDate: receipt_date || new Date().toISOString().split('T')[0],
+        totalAmount: monthAmt,
+        voucherNo: voucher_no || `VR-${m}-${loan.payId}`,
+        sourceType: 'inter_pbs' as const,
+        notes: `${source_pbs_name ? source_pbs_name + ' হতে: ' : ''}${remarks || 'অন্য পবিস হতে রেমিট্যান্স প্রাপ্তি'}`
+      };
+    });
+
+    const result = db.postMultiMonthRepayments(items, currentUser || 'accounts');
+    res.status(201).json({ success: true, ...result });
+  } catch (err: any) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// --- Official BREB Chart-of-Accounts GL Reports (hbl360 standard) ---
+// GL 143.20: House Loan Principal Ledger
+router.get('/reports/house-loan-ledger-14320', (req: Request, res: Response) => {
+  const loans = db.getLoans().filter(l => l.loanSource === 'own');
+  const repayments = db.getRepayments().filter(r => r.sourceType === 'payroll' || r.sourceType === 'manual');
+  const totalPrincipal = loans.reduce((s, l) => s + l.principalBalance, 0);
+  const totalDisbursed = loans.reduce((s, l) => s + l.disbursementAmount, 0);
+  const totalRecovered = repayments.reduce((s, r) => s + r.principalPaid, 0);
+
+  res.json({
+    success: true,
+    glCode: '143.20',
+    glName: 'গৃহ নির্মাণ ঋণ (আসল)',
+    totalLoans: loans.length,
+    totalDisbursed,
+    totalRecovered,
+    currentPrincipalBalance: totalPrincipal,
+    loans
+  });
+});
+
+// GL 242.50: Other PBS House Building Loan Collection & Remittance Liability Ledger
+router.get('/reports/other-pbs-ledger-24250', (req: Request, res: Response) => {
+  const transferred = db.getLoans().filter(l => l.loanSource === 'other');
+  const repayments = db.getRepayments().filter(r => r.sourceType === 'inter_pbs');
+  const bankAdvices = db.getBankAdvices();
+  const totalRemitted = bankAdvices.reduce((s, a) => s + a.totalAmount, 0);
+  const totalCollected = repayments.reduce((s, r) => s + r.totalAmount, 0);
+
+  res.json({
+    success: true,
+    glCode: '242.50',
+    glName: 'অন্যান্য পবিস গৃহ নির্মাণ ঋণ আদায় ও রেমিট্যান্স দায় হিসাব',
+    transferredLoansCount: transferred.length,
+    totalCollected,
+    totalRemitted,
+    pendingRemittance: Math.max(0, totalCollected - totalRemitted),
+    bankAdvices
+  });
 });
 
 // --- Detailed Loan Ledger ---
