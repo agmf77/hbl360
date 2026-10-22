@@ -28,12 +28,51 @@
   background: #94a3b8;
 }
 
-/* Official Print Styles */
+/* Official High-Contrast Accounting Print Styles */
 @media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   body {
-    background-color: white !important;
-    color: black !important;
-    font-size: 11pt !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 10pt !important;
+  }
+
+  /* Prevent any dark background from printing as a black block */
+  .bg-slate-900,
+  .bg-slate-950,
+  .bg-slate-800,
+  .bg-slate-700,
+  .bg-black {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
+  }
+
+  /* Ensure text that was white on dark backgrounds prints dark */
+  .bg-slate-900 .text-white,
+  .bg-slate-950 .text-white,
+  .bg-slate-800 .text-white,
+  .text-white {
+    color: #0f172a !important;
+  }
+
+  .text-slate-400,
+  .text-slate-300 {
+    color: #475569 !important;
+  }
+
+  /* Crisp table borders for accounting printouts */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  th, td {
+    border-color: #cbd5e1 !important;
   }
 
   .no-print {
@@ -53,7 +92,7 @@
   }
 
   @page {
-    margin: 15mm;
+    margin: 12mm;
     size: A4 portrait;
   }
 }

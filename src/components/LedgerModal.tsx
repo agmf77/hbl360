@@ -143,15 +143,15 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({ loanId, loans = [], se
       csvContent += `"কর্মকর্তা-কর্মচারী বহুমাত্রিক গৃহ ঋণ একীভূত খতিয়ান বিবরণী (Consolidated Loan Statement)"\n\n`;
 
       csvContent += `"কর্মচারীর নাম:","${emp.nameBn}","পে-আইডি:","${emp.payId}","পদবী:","${emp.designation}"\n`;
-      csvContent += `"মোট সক্রিয় ঋণ:","${consolidatedData.loans.length} টি","সর্বমোট বকেয়া দেনা:","৳ ${consolidatedData.grandTotal.totalPayable.toLocaleString()}"\n\n`;
+      csvContent += `"মোট সক্রিয় ঋণ:","${consolidatedData.loans.length} টি","সর্বমোট বকেয়া দেনা:","${consolidatedData.grandTotal.totalPayable.toLocaleString()}"\n\n`;
 
       // Table Header
-      csvContent += `"তারিখ","বিবরণ ও ভাউচার নং","ডেবিট: আসল (৳)","ডেবিট: ধার্যকৃত সুদ (৳)","ক্রেডিট: আসল আদায় (৳)","ক্রেডিট: সুদ আদায় (৳)","চলতি আসল স্থিতি (৳)","চলতি সুদ স্থিতি (৳)","সর্বমোট স্থিতি (৳)"\n`;
+      csvContent += `"তারিখ","বিবরণ ও ভাউচার নং","ডেবিট: আসল (টাকা)","ডেবিট: ধার্যকৃত সুদ (টাকা)","ক্রেডিট: আসল আদায় (টাকা)","ক্রেডিট: সুদ আদায় (টাকা)","চলতি আসল স্থিতি (টাকা)","চলতি সুদ স্থিতি (টাকা)","সর্বমোট স্থিতি (টাকা)"\n`;
 
       // Each Loan Block
       consolidatedData.ledgers.forEach((ledgerItem, idx) => {
         const l = ledgerItem.loan;
-        csvContent += `\n"--- ঋণ হিসাব ${idx + 1}: ${l.loanNo} (${l.allocationNo || 'বরাদ্দ'}) ---","মঞ্জুরিকৃত আসল: ৳${l.disbursementAmount}","","","","","","",""\n`;
+        csvContent += `\n"--- ঋণ হিসাব ${idx + 1}: ${l.loanNo} (${l.allocationNo || 'বরাদ্দ'}) ---","মঞ্জুরিকৃত আসল: ${l.disbursementAmount}","","","","","","",""\n`;
 
         ledgerItem.rows.forEach(r => {
           const desc = r.voucherNo ? `${r.description} (ভাউচার: ${r.voucherNo})` : r.description;
@@ -175,7 +175,7 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({ loanId, loans = [], se
       csvContent += `"${settings.pbsNameBn} - গৃহ নির্মাণ ঋণ খতিয়ান"\n`;
       csvContent += `"কর্মচারীর নাম:","${d.employee?.nameBn}","পে-আইডি:","${d.employee?.payId}","ঋণ নং:","${d.loan?.loanNo}"\n\n`;
 
-      csvContent += `"তারিখ","বিবরণ ও ভাউচার নং","ডেবিট: আসল (৳)","ডেবিট: ধার্যকৃত সুদ (৳)","ক্রেডিট: আসল আদায় (৳)","ক্রেডিট: সুদ আদায় (৳)","চলতি আসল স্থিতি (৳)","চলতি সুদ স্থিতি (৳)","সর্বমোট স্থিতি (৳)"\n`;
+      csvContent += `"তারিখ","বিবরণ ও ভাউচার নং","ডেবিট: আসল (টাকা)","ডেবিট: ধার্যকৃত সুদ (টাকা)","ক্রেডিট: আসল আদায় (টাকা)","ক্রেডিট: সুদ আদায় (টাকা)","চলতি আসল স্থিতি (টাকা)","চলতি সুদ স্থিতি (টাকা)","সর্বমোট স্থিতি (টাকা)"\n`;
 
       d.rows.forEach((r: LedgerRow) => {
         const desc = r.voucherNo ? `${r.description} (ভাউচার: ${r.voucherNo})` : r.description;
@@ -364,10 +364,10 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({ loanId, loans = [], se
                     <div>
                       <span className="text-slate-500 block text-[10px] font-medium">সর্বমোট মঞ্জুরিকৃত আসল:</span>
                       <strong className="text-emerald-950 font-num text-sm">
-                        ৳ {consolidatedData.grandTotal.totalDisbursed.toLocaleString()}
+                        {consolidatedData.grandTotal.totalDisbursed.toLocaleString()}
                       </strong>
                       <div className="text-[10px] text-slate-500">
-                        মোট প্রদেয়: ৳ {consolidatedData.grandTotal.totalPayable.toLocaleString()}
+                        মোট প্রদেয়: {consolidatedData.grandTotal.totalPayable.toLocaleString()}
                       </div>
                     </div>
                   </div>
@@ -406,7 +406,7 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({ loanId, loans = [], se
                       </div>
                       <div>
                         <span className="text-slate-500 block text-[10px]">মঞ্জুরিকৃত আসল ও তারিখ:</span>
-                        <strong className="text-slate-900 font-num">৳ {currentItem.loan.disbursementAmount.toLocaleString()}</strong>
+                        <strong className="text-slate-900 font-num">{currentItem.loan.disbursementAmount.toLocaleString()}</strong>
                         <div className="text-[10px] text-slate-400 font-num">{currentItem.loan.disbursementDate}</div>
                       </div>
                     </div>
@@ -451,24 +451,26 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({ loanId, loans = [], se
 
                         return (
                           <React.Fragment key={l.id}>
-                            {/* Excel Group Header for this Loan */}
-                            <tr className="bg-slate-800 text-white font-semibold">
-                              <td colSpan={9} className="px-3 py-2 text-xs">
+                            {/* Excel Group Header for this Loan - High Contrast Light Accounting Header */}
+                            <tr className="bg-slate-100 text-slate-900 font-bold border-y-2 border-slate-300 print:bg-slate-50 print:border-slate-400">
+                              <td colSpan={9} className="px-3.5 py-2.5 text-xs">
                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                   <div className="flex items-center gap-2">
-                                    <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">
+                                    <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center text-[10px] font-bold shadow-2xs">
                                       {loanIndex + 1}
                                     </span>
-                                    <span className="font-bold text-emerald-300">ঋণ হিসাব: {l.loanNo}</span>
-                                    <span className="px-2 py-0.5 rounded bg-slate-700 text-slate-200 text-[10px]">
+                                    <span className="font-extrabold text-emerald-950 text-xs">
+                                      ঋণ হিসাব: {l.loanNo}
+                                    </span>
+                                    <span className="px-2 py-0.5 rounded bg-white text-slate-800 text-[10px] border border-slate-300 font-semibold shadow-2xs">
                                       {l.allocationNo || '১ম বরাদ্দ'}
                                     </span>
-                                    <span className="text-slate-300 text-[11px] hidden sm:inline">
+                                    <span className="text-slate-600 text-[11px] hidden sm:inline">
                                       (উৎস: {l.lendingPbs} · {l.loanSource === 'other' ? 'অন্য পবিস' : 'নিজস্ব ঋণ'})
                                     </span>
                                   </div>
-                                  <div className="text-xs text-slate-200 font-num">
-                                    মঞ্জুরিকৃত আসল: <strong className="text-white">৳ {l.disbursementAmount.toLocaleString()}</strong> · তারিখ: {l.disbursementDate}
+                                  <div className="text-xs text-slate-700 font-num">
+                                    মঞ্জুরিকৃত আসল: <strong className="text-slate-950 font-black">{l.disbursementAmount.toLocaleString()}</strong> · তারিখ: {l.disbursementDate}
                                   </div>
                                 </div>
                               </td>
@@ -489,97 +491,97 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({ loanId, loans = [], se
                                   )}
                                 </td>
                                 <td className="p-2 border-r border-slate-300 text-right">
-                                  {row.debitPrincipal > 0 ? `৳${row.debitPrincipal.toLocaleString()}` : '-'}
+                                  {row.debitPrincipal > 0 ? row.debitPrincipal.toLocaleString() : '-'}
                                 </td>
                                 <td className="p-2 border-r border-slate-300 text-right">
-                                  {row.debitInterest > 0 ? `৳${row.debitInterest.toLocaleString()}` : '-'}
+                                  {row.debitInterest > 0 ? row.debitInterest.toLocaleString() : '-'}
                                 </td>
                                 <td className="p-2 border-r border-slate-300 text-right text-emerald-800 font-medium">
-                                  {row.creditPrincipal > 0 ? `৳${row.creditPrincipal.toLocaleString()}` : '-'}
+                                  {row.creditPrincipal > 0 ? row.creditPrincipal.toLocaleString() : '-'}
                                 </td>
                                 <td className="p-2 border-r border-slate-300 text-right text-blue-800 font-medium">
-                                  {row.creditInterest > 0 ? `৳${row.creditInterest.toLocaleString()}` : '-'}
+                                  {row.creditInterest > 0 ? row.creditInterest.toLocaleString() : '-'}
                                 </td>
                                 <td className="p-2 border-r border-slate-300 text-right font-bold text-emerald-900">
-                                  ৳ {row.runningPrincipal.toLocaleString()}
+                                  {row.runningPrincipal.toLocaleString()}
                                 </td>
                                 <td className="p-2 border-r border-slate-300 text-right font-bold text-blue-900">
-                                  ৳ {row.runningInterest.toLocaleString()}
+                                  {row.runningInterest.toLocaleString()}
                                 </td>
                                 <td className="p-2 text-right font-bold text-slate-950 bg-slate-50/70">
-                                  ৳ {row.totalBalance.toLocaleString()}
+                                  {row.totalBalance.toLocaleString()}
                                 </td>
                               </tr>
                             ))}
 
                             {/* EXCEL SUB-TOTAL ROW (উপ-মোট) */}
-                            <tr className="bg-amber-100/90 text-amber-950 font-bold border-t-2 border-b-2 border-amber-300 font-num">
+                            <tr className="bg-amber-100/90 text-amber-950 font-bold border-t-2 border-b-2 border-amber-400 font-num print:bg-amber-50">
                               <td colSpan={2} className="p-2.5 border-r border-amber-300 font-sans text-xs">
                                 <div className="flex items-center gap-1.5">
-                                  <span className="px-1.5 py-0.5 rounded bg-amber-200 text-amber-900 text-[10px] font-bold uppercase tracking-wider">
+                                  <span className="px-1.5 py-0.5 rounded bg-amber-200 text-amber-950 text-[10px] font-extrabold uppercase tracking-wider border border-amber-300">
                                     Sub-Total
                                   </span>
-                                  <span>উপ-মোট: ঋণ নং {l.loanNo} ({l.allocationNo || 'বরাদ্দ'})</span>
+                                  <span className="font-bold">উপ-মোট: ঋণ নং {l.loanNo} ({l.allocationNo || 'বরাদ্দ'})</span>
                                 </div>
                               </td>
-                              <td className="p-2 border-r border-amber-300 text-right">
-                                ৳ {st.totalDebitPrincipal.toLocaleString()}
+                              <td className="p-2 border-r border-amber-300 text-right text-slate-950 font-bold">
+                                {st.totalDebitPrincipal.toLocaleString()}
                               </td>
-                              <td className="p-2 border-r border-amber-300 text-right">
-                                ৳ {st.totalDebitInterest.toLocaleString()}
+                              <td className="p-2 border-r border-amber-300 text-right text-slate-950 font-bold">
+                                {st.totalDebitInterest.toLocaleString()}
                               </td>
-                              <td className="p-2 border-r border-amber-300 text-right text-emerald-900">
-                                ৳ {st.totalCreditPrincipal.toLocaleString()}
+                              <td className="p-2 border-r border-amber-300 text-right text-emerald-950 font-bold">
+                                {st.totalCreditPrincipal.toLocaleString()}
                               </td>
-                              <td className="p-2 border-r border-amber-300 text-right text-blue-900">
-                                ৳ {st.totalCreditInterest.toLocaleString()}
+                              <td className="p-2 border-r border-amber-300 text-right text-blue-950 font-bold">
+                                {st.totalCreditInterest.toLocaleString()}
                               </td>
-                              <td className="p-2 border-r border-amber-300 text-right text-emerald-950 font-extrabold">
-                                ৳ {st.closingPrincipal.toLocaleString()}
+                              <td className="p-2 border-r border-amber-300 text-right text-emerald-950 font-black">
+                                {st.closingPrincipal.toLocaleString()}
                               </td>
-                              <td className="p-2 border-r border-amber-300 text-right text-blue-950 font-extrabold">
-                                ৳ {st.closingInterest.toLocaleString()}
+                              <td className="p-2 border-r border-amber-300 text-right text-blue-950 font-black">
+                                {st.closingInterest.toLocaleString()}
                               </td>
-                              <td className="p-2 text-right text-slate-950 font-extrabold bg-amber-200/60">
-                                ৳ {st.totalPayable.toLocaleString()}
+                              <td className="p-2 text-right text-slate-950 font-black bg-amber-200/70 border-l border-amber-300">
+                                {st.totalPayable.toLocaleString()}
                               </td>
                             </tr>
                           </React.Fragment>
                         );
                       })}
 
-                      {/* EXCEL GRAND TOTAL ROW (সর্বমোট গ্র্যান্ড টোটাল) */}
-                      <tr className="bg-slate-900 text-white font-extrabold border-t-2 border-b-4 border-double border-slate-700 text-xs font-num print:bg-slate-800 print:text-white">
-                        <td colSpan={2} className="p-3 border-r border-slate-700 font-sans">
+                      {/* EXCEL GRAND TOTAL ROW (সর্বমোট গ্র্যান্ড টোটাল) - Light High Contrast Accounting Standard */}
+                      <tr className="bg-slate-100 text-slate-950 font-extrabold border-t-2 border-slate-700 border-b-4 border-double border-slate-900 text-xs font-num print:bg-white print:border-slate-900">
+                        <td colSpan={2} className="p-3 border-r border-slate-300 font-sans">
                           <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 rounded bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider">
+                            <span className="px-2 py-0.5 rounded bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider border border-amber-500 shadow-2xs">
                               Grand Total
                             </span>
-                            <span className="text-sm font-bold text-amber-300">
+                            <span className="text-xs sm:text-sm font-black text-slate-950">
                               ★ সর্বমোট গ্র্যান্ড টোটাল (পে-আইডি: {consolidatedData.employee?.payId} এর সকল ঋণ)
                             </span>
                           </div>
                         </td>
-                        <td className="p-2.5 border-r border-slate-700 text-right text-slate-100">
-                          ৳ {consolidatedData.grandTotal.totalDebitPrincipal.toLocaleString()}
+                        <td className="p-2.5 border-r border-slate-300 text-right text-slate-950 font-bold">
+                          {consolidatedData.grandTotal.totalDebitPrincipal.toLocaleString()}
                         </td>
-                        <td className="p-2.5 border-r border-slate-700 text-right text-slate-100">
-                          ৳ {consolidatedData.grandTotal.totalDebitInterest.toLocaleString()}
+                        <td className="p-2.5 border-r border-slate-300 text-right text-slate-950 font-bold">
+                          {consolidatedData.grandTotal.totalDebitInterest.toLocaleString()}
                         </td>
-                        <td className="p-2.5 border-r border-slate-700 text-right text-emerald-300">
-                          ৳ {consolidatedData.grandTotal.totalCreditPrincipal.toLocaleString()}
+                        <td className="p-2.5 border-r border-slate-300 text-right text-emerald-950 font-bold">
+                          {consolidatedData.grandTotal.totalCreditPrincipal.toLocaleString()}
                         </td>
-                        <td className="p-2.5 border-r border-slate-700 text-right text-blue-300">
-                          ৳ {consolidatedData.grandTotal.totalCreditInterest.toLocaleString()}
+                        <td className="p-2.5 border-r border-slate-300 text-right text-blue-950 font-bold">
+                          {consolidatedData.grandTotal.totalCreditInterest.toLocaleString()}
                         </td>
-                        <td className="p-2.5 border-r border-slate-700 text-right text-emerald-400 text-sm font-black">
-                          ৳ {consolidatedData.grandTotal.closingPrincipal.toLocaleString()}
+                        <td className="p-2.5 border-r border-slate-300 text-right text-emerald-950 text-sm font-black">
+                          {consolidatedData.grandTotal.closingPrincipal.toLocaleString()}
                         </td>
-                        <td className="p-2.5 border-r border-slate-700 text-right text-blue-400 text-sm font-black">
-                          ৳ {consolidatedData.grandTotal.closingInterest.toLocaleString()}
+                        <td className="p-2.5 border-r border-slate-300 text-right text-blue-950 text-sm font-black">
+                          {consolidatedData.grandTotal.closingInterest.toLocaleString()}
                         </td>
-                        <td className="p-2.5 text-right text-amber-300 text-sm font-black bg-slate-950">
-                          ৳ {consolidatedData.grandTotal.totalPayable.toLocaleString()}
+                        <td className="p-2.5 text-right text-emerald-950 text-sm font-black bg-emerald-100/70 border-l border-slate-300 print:bg-white">
+                          {consolidatedData.grandTotal.totalPayable.toLocaleString()}
                         </td>
                       </tr>
                     </tbody>
@@ -628,25 +630,25 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({ loanId, loans = [], se
                                 )}
                               </td>
                               <td className="p-2 border-r border-slate-300 text-right">
-                                {row.debitPrincipal > 0 ? `৳${row.debitPrincipal.toLocaleString()}` : '-'}
+                                {row.debitPrincipal > 0 ? row.debitPrincipal.toLocaleString() : '-'}
                               </td>
                               <td className="p-2 border-r border-slate-300 text-right">
-                                {row.debitInterest > 0 ? `৳${row.debitInterest.toLocaleString()}` : '-'}
+                                {row.debitInterest > 0 ? row.debitInterest.toLocaleString() : '-'}
                               </td>
                               <td className="p-2 border-r border-slate-300 text-right text-emerald-800 font-medium">
-                                {row.creditPrincipal > 0 ? `৳${row.creditPrincipal.toLocaleString()}` : '-'}
+                                {row.creditPrincipal > 0 ? row.creditPrincipal.toLocaleString() : '-'}
                               </td>
                               <td className="p-2 border-r border-slate-300 text-right text-blue-800 font-medium">
-                                {row.creditInterest > 0 ? `৳${row.creditInterest.toLocaleString()}` : '-'}
+                                {row.creditInterest > 0 ? row.creditInterest.toLocaleString() : '-'}
                               </td>
                               <td className="p-2 border-r border-slate-300 text-right font-bold text-emerald-900">
-                                ৳ {row.runningPrincipal.toLocaleString()}
+                                {row.runningPrincipal.toLocaleString()}
                               </td>
                               <td className="p-2 border-r border-slate-300 text-right font-bold text-blue-900">
-                                ৳ {row.runningInterest.toLocaleString()}
+                                {row.runningInterest.toLocaleString()}
                               </td>
                               <td className="p-2 text-right font-bold text-slate-950 bg-slate-50/60">
-                                ৳ {row.totalBalance.toLocaleString()}
+                                {row.totalBalance.toLocaleString()}
                               </td>
                             </tr>
                           ))}
@@ -657,45 +659,45 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({ loanId, loans = [], se
                 })()
               )}
 
-              {/* Closing Balances Box (Excel Summary Cards) */}
+              {/* Closing Balances Box (Excel Summary Cards) - High Contrast Light Accounting Layout */}
               {activeTab === 'consolidated' && consolidatedData ? (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-slate-900 text-white font-num text-xs">
-                  <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-sans">সর্বমোট সমাপনী আসল স্থিতি</span>
-                    <div className="text-base font-bold text-emerald-400">
-                      ৳ {consolidatedData.grandTotal.closingPrincipal.toLocaleString()}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-slate-50 border-2 border-slate-300 text-slate-900 font-num text-xs shadow-xs print:bg-white print:border-slate-500">
+                  <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs print:border-slate-300">
+                    <span className="text-slate-600 block text-[11px] font-bold font-sans">সর্বমোট সমাপনী আসল স্থিতি</span>
+                    <div className="text-base sm:text-lg font-extrabold text-emerald-800 mt-0.5">
+                      {consolidatedData.grandTotal.closingPrincipal.toLocaleString()}
                     </div>
-                    <div className="text-[10px] text-slate-400 font-sans mt-0.5">
-                      আদায়কৃত আসল: ৳ {consolidatedData.grandTotal.totalCreditPrincipal.toLocaleString()}
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-sans">সর্বমোট সমাপনী ধার্যকৃত সুদ</span>
-                    <div className="text-base font-bold text-blue-400">
-                      ৳ {consolidatedData.grandTotal.closingInterest.toLocaleString()}
-                    </div>
-                    <div className="text-[10px] text-slate-400 font-sans mt-0.5">
-                      পরিশোধিত সুদ: ৳ {consolidatedData.grandTotal.totalCreditInterest.toLocaleString()}
+                    <div className="text-[10px] text-slate-500 font-sans mt-0.5">
+                      আদায়কৃত আসল: {consolidatedData.grandTotal.totalCreditPrincipal.toLocaleString()}
                     </div>
                   </div>
 
-                  <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-sans">অগ্রিম জমা স্থিতি</span>
-                    <div className="text-base font-bold text-purple-400">
-                      ৳ {consolidatedData.grandTotal.closingAdvance.toLocaleString()}
+                  <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs print:border-slate-300">
+                    <span className="text-slate-600 block text-[11px] font-bold font-sans">সর্বমোট সমাপনী ধার্যকৃত সুদ</span>
+                    <div className="text-base sm:text-lg font-extrabold text-blue-800 mt-0.5">
+                      {consolidatedData.grandTotal.closingInterest.toLocaleString()}
                     </div>
-                    <div className="text-[10px] text-slate-400 font-sans mt-0.5">অতিরিক্ত কর্তন সঞ্চয়</div>
+                    <div className="text-[10px] text-slate-500 font-sans mt-0.5">
+                      পরিশোধিত সুদ: {consolidatedData.grandTotal.totalCreditInterest.toLocaleString()}
+                    </div>
                   </div>
 
-                  <div className="bg-slate-800/80 p-2 rounded-lg border border-slate-700">
-                    <span className="text-amber-400 block text-[10px] uppercase font-sans font-bold">
+                  <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs print:border-slate-300">
+                    <span className="text-slate-600 block text-[11px] font-bold font-sans">অগ্রিম জমা স্থিতি</span>
+                    <div className="text-base sm:text-lg font-extrabold text-purple-800 mt-0.5">
+                      {consolidatedData.grandTotal.closingAdvance.toLocaleString()}
+                    </div>
+                    <div className="text-[10px] text-slate-500 font-sans mt-0.5">অতিরিক্ত কর্তন সঞ্চয়</div>
+                  </div>
+
+                  <div className="bg-emerald-50/90 p-3 rounded-lg border-2 border-emerald-400 text-emerald-950 shadow-2xs print:bg-white print:border-slate-700">
+                    <span className="text-emerald-950 block text-[11px] font-black font-sans uppercase">
                       সর্বমোট একীভূত বকেয়া দেনা
                     </span>
-                    <div className="text-lg font-black text-white">
-                      ৳ {consolidatedData.grandTotal.totalPayable.toLocaleString()}
+                    <div className="text-lg sm:text-xl font-black text-emerald-950 mt-0.5">
+                      {consolidatedData.grandTotal.totalPayable.toLocaleString()}
                     </div>
-                    <div className="text-[10px] text-slate-300 font-sans">
+                    <div className="text-[10px] text-emerald-800 font-semibold font-sans mt-0.5">
                       ({consolidatedData.loans.length} টি ঋণের আসল + সুদ)
                     </div>
                   </div>
@@ -705,32 +707,32 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({ loanId, loans = [], se
                   const currentItem = selectedIndividualLedger || singleLoanData;
                   if (!currentItem) return null;
                   return (
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-slate-900 text-white font-num text-xs">
-                      <div>
-                        <span className="text-slate-400 block text-[10px] uppercase font-sans">সমাপনী আসল স্থিতি</span>
-                        <div className="text-base font-bold text-emerald-400">
-                          ৳ {currentItem.closingPrincipal.toLocaleString()}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-slate-50 border-2 border-slate-300 text-slate-900 font-num text-xs shadow-xs print:bg-white print:border-slate-500">
+                      <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs print:border-slate-300">
+                        <span className="text-slate-600 block text-[11px] font-bold font-sans">সমাপনী আসল স্থিতি</span>
+                        <div className="text-base sm:text-lg font-extrabold text-emerald-800 mt-0.5">
+                          {currentItem.closingPrincipal.toLocaleString()}
                         </div>
                       </div>
 
-                      <div>
-                        <span className="text-slate-400 block text-[10px] uppercase font-sans">সমাপনী ধার্যকৃত সুদ</span>
-                        <div className="text-base font-bold text-blue-400">
-                          ৳ {currentItem.closingInterest.toLocaleString()}
+                      <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs print:border-slate-300">
+                        <span className="text-slate-600 block text-[11px] font-bold font-sans">সমাপনী ধার্যকৃত সুদ</span>
+                        <div className="text-base sm:text-lg font-extrabold text-blue-800 mt-0.5">
+                          {currentItem.closingInterest.toLocaleString()}
                         </div>
                       </div>
 
-                      <div>
-                        <span className="text-slate-400 block text-[10px] uppercase font-sans">অগ্রিম জমা স্থিতি</span>
-                        <div className="text-base font-bold text-purple-400">
-                          ৳ {currentItem.closingAdvance.toLocaleString()}
+                      <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs print:border-slate-300">
+                        <span className="text-slate-600 block text-[11px] font-bold font-sans">অগ্রিম জমা স্থিতি</span>
+                        <div className="text-base sm:text-lg font-extrabold text-purple-800 mt-0.5">
+                          {currentItem.closingAdvance.toLocaleString()}
                         </div>
                       </div>
 
-                      <div>
-                        <span className="text-slate-400 block text-[10px] uppercase font-sans">সর্বমোট প্রদেয় ব্যালেন্স</span>
-                        <div className="text-base font-bold text-white">
-                          ৳ {currentItem.totalPayable.toLocaleString()}
+                      <div className="bg-emerald-50/90 p-3 rounded-lg border-2 border-emerald-400 text-emerald-950 shadow-2xs print:bg-white print:border-slate-700">
+                        <span className="text-emerald-950 block text-[11px] font-black font-sans uppercase">সর্বমোট প্রদেয় ব্যালেন্স</span>
+                        <div className="text-lg sm:text-xl font-black text-emerald-950 mt-0.5">
+                          {currentItem.totalPayable.toLocaleString()}
                         </div>
                       </div>
                     </div>
@@ -741,7 +743,7 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({ loanId, loans = [], se
               {/* Signatures */}
               <div className="pt-10 grid grid-cols-2 gap-8 text-center text-xs">
                 <div>
-                  <div className="font-bold border-t border-slate-400 pt-1">হিসাব সহকারী / ক্যাশিয়ার</div>
+                  <div className="font-bold border-t border-slate-400 pt-1">জুনিয়র অফিসার/অফিসার(হিসাব)</div>
                   <div className="text-[10px] text-slate-500">অর্থ ও হিসাব শাখা</div>
                 </div>
                 <div>

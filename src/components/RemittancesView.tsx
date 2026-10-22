@@ -506,17 +506,11 @@ export const RemittancesView: React.FC<RemittancesViewProps> = ({
                 </table>
               </div>
 
-              {/* Signatures Block (AGM Finance, DGM, GM) */}
-              <div className="pt-12 grid grid-cols-3 gap-6 text-center text-xs">
+              {/* Signatures Block (AGM Finance & GM) */}
+              <div className="pt-14 grid grid-cols-2 gap-12 text-center text-xs">
                 <div>
                   <div className="font-bold border-t border-slate-400 pt-1 text-slate-900">{previewAdvice.agmFinanceName}</div>
                   <div className="text-[11px] text-slate-600">এজিএম (অর্থ-হিসাব)</div>
-                  <div className="text-[10px] text-slate-400">{previewAdvice.fromPbs || settings.pbsNameBn}</div>
-                </div>
-
-                <div>
-                  <div className="font-bold border-t border-slate-400 pt-1 text-slate-900">{previewAdvice.dgmName}</div>
-                  <div className="text-[11px] text-slate-600">ডিজিএম (প্রশাসন/সদর)</div>
                   <div className="text-[10px] text-slate-400">{previewAdvice.fromPbs || settings.pbsNameBn}</div>
                 </div>
 

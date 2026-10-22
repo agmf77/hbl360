@@ -215,18 +215,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </div>
 
             {/* Official Signatories footer */}
-            <div className="border-t border-slate-200 pt-8 mt-12 grid grid-cols-3 gap-4 text-center font-sans text-xs">
+            <div className="border-t border-slate-200 pt-8 mt-12 grid grid-cols-2 gap-8 text-center font-sans text-xs">
               <div>
                 <div className="h-10 border-b border-dashed border-slate-300 mb-1"></div>
                 <div className="font-bold text-slate-900">{form.agmFinanceName || 'নাজমুন নাহার'}</div>
                 <div className="text-[11px] text-slate-600">এজিএম (অর্থ-হিসাব)</div>
-                <div className="text-[10px] text-slate-500">{form.pbsNameBn}</div>
-              </div>
-
-              <div>
-                <div className="h-10 border-b border-dashed border-slate-300 mb-1"></div>
-                <div className="font-bold text-slate-900">{form.dgmName || 'রফিকুল ইসলাম'}</div>
-                <div className="text-[11px] text-slate-600">ডিজিএম</div>
                 <div className="text-[10px] text-slate-500">{form.pbsNameBn}</div>
               </div>
 

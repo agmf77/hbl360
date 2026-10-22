@@ -52,6 +52,7 @@ import { AuditLogView } from './components/AuditLogView';
 import { SettingsView } from './components/SettingsView';
 import { SearchModal } from './components/SearchModal';
 import { PbsSelectorModal, PbsListItem } from './components/PbsSelectorModal';
+import { BatchPayrollModal, formatMonthBn, getMonthEndDate } from './components/BatchPayrollModal';
 
 export default function App() {
   // Current logged in role
@@ -122,6 +123,7 @@ export default function App() {
   const [repaymentModalLoanId, setRepaymentModalLoanId] = useState<string | undefined>(undefined);
   const [addLoanModalOpen, setAddLoanModalOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [batchPayrollModalOpen, setBatchPayrollModalOpen] = useState(false);
 
   // Fetch initial data from local server
   const refreshAllData = useCallback(async () => {
@@ -229,16 +231,22 @@ export default function App() {
     }
   };
 
-  // Run Batch Payroll Deduction
-  const handleRunBatchPayroll = async () => {
+  // Open Batch Payroll Confirmation Modal
+  const handleOpenBatchPayrollModal = () => {
+    setBatchPayrollModalOpen(true);
+  };
+
+  // Execute Batch Payroll Deduction for confirmed month and date
+  const handleExecuteBatchPayroll = async (targetMonth = '2026-10', deductionDate?: string) => {
+    const finalDate = deductionDate || getMonthEndDate(targetMonth) || new Date().toISOString().split('T')[0];
     try {
       setIsProcessing(true);
       const res = await fetch('/api/repayments/batch-payroll', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          month: '2026-10',
-          date: new Date().toISOString().split('T')[0],
+          month: targetMonth,
+          date: finalDate,
           currentUser: currentUser.nameBn
         })
       });
@@ -261,6 +269,8 @@ export default function App() {
           }
         }
         await refreshAllData();
+        setBatchPayrollModalOpen(false);
+        alert(`সফলভাবে ${formatMonthBn(targetMonth)} পর্যন্ত মোট ${data.processedCount || 0} টি ঋণের ৳${(data.totalAmount || 0).toLocaleString()} কিস্তি ব্যাচ কর্তন সম্পন্ন হয়েছে।`);
       } else {
         alert(data.message || 'ব্যাচ কিস্তি কর্তন ব্যর্থ হয়েছে।');
       }
@@ -645,7 +655,7 @@ export default function App() {
               liveEvents={liveEvents}
               currentUser={currentUser}
               onNavigate={setActiveTab}
-              onRunBatchPayroll={handleRunBatchPayroll}
+              onRunBatchPayroll={handleOpenBatchPayrollModal}
               onRunProvisions={() => handleRunProvisions('2026-10')}
               onOpenNewAdvice={() => setActiveTab('remittances')}
               onSimulateTest={handleSimulateTest}
@@ -690,7 +700,7 @@ export default function App() {
                 setRepaymentModalLoanId(undefined);
                 setRepaymentModalOpen(true);
               }}
-              onRunBatchPayroll={handleRunBatchPayroll}
+              onRunBatchPayroll={handleOpenBatchPayrollModal}
               onOpenLedger={(loanId) => setSelectedLedgerLoanId(loanId)}
               isProcessing={isProcessing}
             />
@@ -840,6 +850,17 @@ export default function App() {
           onSelectLoan={(loanId) => {
             setSelectedLedgerLoanId(loanId);
           }}
+        />
+      )}
+
+      {batchPayrollModalOpen && (
+        <BatchPayrollModal
+          isOpen={batchPayrollModalOpen}
+          onClose={() => setBatchPayrollModalOpen(false)}
+          loans={loans}
+          repayments={repayments}
+          isProcessing={isProcessing}
+          onConfirm={handleExecuteBatchPayroll}
         />
       )}
     </div>
