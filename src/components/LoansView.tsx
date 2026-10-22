@@ -211,13 +211,18 @@ export const LoansView: React.FC<LoansViewProps> = ({
               {/* Card Header */}
               <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3 mb-3">
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-slate-900 text-sm">
                       {loan.employeeNameBn}
                     </span>
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 font-num">
                       পে-আইডি: {loan.payId}
                     </span>
+                    {loans.filter(l => l.payId === loan.payId).length > 1 && (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300" title="এই পে-আইডির বিপরীতে একাধিক ঋণ হিসাব বিদ্যমান">
+                        {loans.filter(l => l.payId === loan.payId).length} টি ঋণ (একীভূত)
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5">
                     {loan.employeeDesignation}
@@ -283,10 +288,21 @@ export const LoansView: React.FC<LoansViewProps> = ({
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
               <button
                 onClick={() => onOpenLedger(loan.id)}
-                className="flex items-center gap-1 text-slate-600 hover:text-emerald-700 font-medium px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors"
+                className={`flex items-center gap-1 font-medium px-2 py-1 rounded-lg transition-colors ${
+                  loans.filter(l => l.payId === loan.payId).length > 1
+                    ? 'text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 font-semibold'
+                    : 'text-slate-600 hover:text-emerald-700 hover:bg-slate-100'
+                }`}
+                title={
+                  loans.filter(l => l.payId === loan.payId).length > 1
+                    ? 'এই পে-আইডির সকল লোনের একীভূত খতিয়ান ও সাব-টোটাল দেখুন'
+                    : 'খতিয়ান স্টেটমেন্ট দেখুন'
+                }
               >
                 <FileText className="w-3.5 h-3.5" />
-                <span>লেজার দেখুন</span>
+                <span>
+                  {loans.filter(l => l.payId === loan.payId).length > 1 ? 'একীভূত লেজার দেখুন' : 'লেজার দেখুন'}
+                </span>
               </button>
 
               {currentUser.role !== 'employee' && (

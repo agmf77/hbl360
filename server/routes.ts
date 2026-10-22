@@ -758,11 +758,27 @@ router.get('/reports/other-pbs-ledger-24250', (req: Request, res: Response) => {
   });
 });
 
-// --- Detailed Loan Ledger ---
+// --- Detailed Single Loan Ledger ---
 router.get('/reports/ledger/:loanId', (req: Request, res: Response) => {
   const ledger = db.getLoanLedger(req.params.loanId);
   if (!ledger) return res.status(404).json({ success: false, message: 'খতিয়ান পাওয়া যায়নি।' });
-  res.json({ success: true, ledger });
+  
+  const allLoansForPayId = db.getLoans().filter(l => l.payId === ledger.loan.payId && !l.isDeleted);
+  res.json({
+    success: true,
+    ledger,
+    siblingLoansCount: allLoansForPayId.length,
+    siblingLoans: allLoansForPayId
+  });
+});
+
+// --- Consolidated Multi-Loan Ledger with Excel-style Subtotals ---
+router.get('/reports/employee-ledger/:payId', (req: Request, res: Response) => {
+  const result = db.getEmployeeLoansLedger(req.params.payId);
+  if (!result) {
+    return res.status(404).json({ success: false, message: 'কর্মকর্তা/কর্মচারীর কোনো ঋণ রেকর্ড পাওয়া যায়নি।' });
+  }
+  res.json({ success: true, ...result });
 });
 
 // --- Fiscal Year Comparative Statement (July - June) ---

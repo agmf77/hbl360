@@ -783,6 +783,7 @@ export default function App() {
       {selectedLedgerLoanId && (
         <LedgerModal
           loanId={selectedLedgerLoanId}
+          loans={loans}
           settings={settings}
           onClose={() => setSelectedLedgerLoanId(null)}
         />

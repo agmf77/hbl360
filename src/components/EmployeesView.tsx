@@ -68,10 +68,12 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
   // Calculate departments
   const departments = Array.from(new Set(employees.map(e => e.department).filter(Boolean)));
 
-  // Map employee loans
-  const loanByPayId = new Map<string, Loan>();
+  // Map employee loans (support single and multiple loans per payId)
+  const loansByPayId = new Map<string, Loan[]>();
   loans.forEach(loan => {
-    loanByPayId.set(loan.payId, loan);
+    const list = loansByPayId.get(loan.payId) || [];
+    list.push(loan);
+    loansByPayId.set(loan.payId, list);
   });
 
   const filteredEmployees = employees.filter(emp => {
@@ -84,7 +86,8 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
 
     const matchesDept = deptFilter === 'all' || emp.department === deptFilter;
 
-    const hasLoan = loanByPayId.has(emp.payId);
+    const empLoans = loansByPayId.get(emp.payId) || [];
+    const hasLoan = empLoans.length > 0;
     const matchesLoan =
       hasLoanFilter === 'all' ||
       (hasLoanFilter === 'with_loan' && hasLoan) ||
@@ -321,7 +324,9 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                 </tr>
               ) : (
                 filteredEmployees.map((emp) => {
-                  const loan = loanByPayId.get(emp.payId);
+                  const empLoans = loansByPayId.get(emp.payId) || [];
+                  const totalPrincipal = empLoans.reduce((sum, l) => sum + l.principalBalance, 0);
+
                   return (
                     <tr key={emp.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3 px-4 font-mono font-bold text-slate-800">
@@ -349,14 +354,27 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        {loan ? (
-                          <div className="space-y-0.5">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                              <CheckCircle2 className="w-3 h-3" />
-                              ঋণ নং: {loan.loanNo}
-                            </span>
-                            <div className="text-[10px] text-slate-500">
-                              আসল স্থিতি: ৳{loan.principalBalance.toLocaleString()}
+                        {empLoans.length > 0 ? (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1 flex-wrap">
+                              {empLoans.map((loan) => (
+                                <span
+                                  key={loan.id}
+                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200"
+                                >
+                                  <CheckCircle2 className="w-2.5 h-2.5" />
+                                  {loan.loanNo} ({loan.allocationNo || 'বরাদ্দ'})
+                                </span>
+                              ))}
+                            </div>
+                            <div className="text-[10px] text-slate-500 font-num">
+                              {empLoans.length > 1 ? (
+                                <span className="font-semibold text-emerald-900">
+                                  মোট আসল স্থিতি ({empLoans.length} টি লোন): ৳{totalPrincipal.toLocaleString()}
+                                </span>
+                              ) : (
+                                <span>আসল স্থিতি: ৳{totalPrincipal.toLocaleString()}</span>
+                              )}
                             </div>
                           </div>
                         ) : (
@@ -364,13 +382,17 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                         )}
                       </td>
                       <td className="py-3 px-4 text-right">
-                        {loan ? (
+                        {empLoans.length > 0 ? (
                           <button
-                            onClick={() => onOpenLedger(loan.id)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 transition-colors"
+                            onClick={() => onOpenLedger(empLoans[0].id)}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors ${
+                              empLoans.length > 1
+                                ? 'bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300 font-bold'
+                                : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200'
+                            }`}
                           >
                             <BookOpen className="w-3 h-3" />
-                            খতিয়ান
+                            {empLoans.length > 1 ? 'একীভূত খতিয়ান' : 'খতিয়ান'}
                           </button>
                         ) : (
                           <span className="text-slate-300">-</span>

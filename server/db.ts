@@ -1493,6 +1493,77 @@ class DatabaseStore {
       totalPayable: loan.principalBalance + loan.interestBalance
     };
   }
+
+  // --- Consolidated Multi-Loan Ledger with Excel-style Subtotals for an Employee ---
+  public getEmployeeLoansLedger(payId: string) {
+    const loans = this.data.loans.filter(l => l.payId === payId && !l.isDeleted);
+    if (!loans || loans.length === 0) return null;
+
+    const emp = this.data.employees.find(e => e.payId === payId && !e.isDeleted) || {
+      id: loans[0].employeeId,
+      payId,
+      nameBn: loans[0].employeeNameBn,
+      nameEn: '',
+      designation: loans[0].employeeDesignation,
+      department: 'সাধারণ',
+      presentPbs: loans[0].lendingPbs,
+      phone: '',
+      email: '',
+      role: 'employee' as const,
+      isActive: true,
+      createdAt: ''
+    };
+
+    // Calculate individual ledgers and subtotals per loan
+    const ledgers = loans.map(loan => {
+      const singleLedger = this.getLoanLedger(loan.id);
+      const rows = singleLedger?.rows || [];
+
+      const totalDebitPrincipal = rows.reduce((s, r) => s + r.debitPrincipal, 0);
+      const totalDebitInterest = rows.reduce((s, r) => s + r.debitInterest, 0);
+      const totalCreditPrincipal = rows.reduce((s, r) => s + r.creditPrincipal, 0);
+      const totalCreditInterest = rows.reduce((s, r) => s + r.creditInterest, 0);
+
+      return {
+        loan,
+        rows,
+        subTotal: {
+          totalDebitPrincipal,
+          totalDebitInterest,
+          totalCreditPrincipal,
+          totalCreditInterest,
+          closingPrincipal: loan.principalBalance,
+          closingInterest: loan.interestBalance,
+          closingAdvance: loan.advanceBalance,
+          totalPayable: loan.principalBalance + loan.interestBalance
+        },
+        closingPrincipal: loan.principalBalance,
+        closingInterest: loan.interestBalance,
+        closingAdvance: loan.advanceBalance,
+        totalPayable: loan.principalBalance + loan.interestBalance
+      };
+    });
+
+    // Grand totals across all loans for this payId
+    const grandTotal = {
+      totalDisbursed: loans.reduce((s, l) => s + l.disbursementAmount, 0),
+      totalDebitPrincipal: ledgers.reduce((s, l) => s + l.subTotal.totalDebitPrincipal, 0),
+      totalDebitInterest: ledgers.reduce((s, l) => s + l.subTotal.totalDebitInterest, 0),
+      totalCreditPrincipal: ledgers.reduce((s, l) => s + l.subTotal.totalCreditPrincipal, 0),
+      totalCreditInterest: ledgers.reduce((s, l) => s + l.subTotal.totalCreditInterest, 0),
+      closingPrincipal: loans.reduce((s, l) => s + l.principalBalance, 0),
+      closingInterest: loans.reduce((s, l) => s + l.interestBalance, 0),
+      closingAdvance: loans.reduce((s, l) => s + l.advanceBalance, 0),
+      totalPayable: loans.reduce((s, l) => s + (l.principalBalance + l.interestBalance), 0)
+    };
+
+    return {
+      employee: emp,
+      loans,
+      ledgers,
+      grandTotal
+    };
+  }
 }
 
 export const db = new DatabaseStore();
