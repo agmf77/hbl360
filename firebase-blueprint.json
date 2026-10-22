@@ -1,0 +1,482 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "Authenticated user profile in PBS House Loan Management System",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "User email address",
+          "format": "email"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User display name",
+          "maxLength": 100
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Avatar photo URL"
+        },
+        "role": {
+          "type": "string",
+          "description": "Role in the system",
+          "enum": ["admin", "accounts", "employee"]
+        },
+        "payId": {
+          "type": "string",
+          "description": "Associated Employee Pay ID",
+          "maxLength": 32
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of user creation"
+        }
+      },
+      "required": ["email", "role", "createdAt"]
+    },
+    "employee": {
+      "title": "Employee",
+      "description": "PBS official or employee profile",
+      "type": "object",
+      "properties": {
+        "payId": {
+          "type": "string",
+          "description": "Employee 4-digit or standard Pay ID",
+          "maxLength": 32
+        },
+        "nameBn": {
+          "type": "string",
+          "description": "Name in Bengali",
+          "maxLength": 128
+        },
+        "nameEn": {
+          "type": "string",
+          "description": "Name in English",
+          "maxLength": 128
+        },
+        "designation": {
+          "type": "string",
+          "description": "Job designation",
+          "maxLength": 128
+        },
+        "department": {
+          "type": "string",
+          "description": "Department or Branch",
+          "maxLength": 128
+        },
+        "presentPbs": {
+          "type": "string",
+          "description": "Current PBS where employed",
+          "maxLength": 128
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact phone number",
+          "maxLength": 32
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address",
+          "format": "email"
+        },
+        "role": {
+          "type": "string",
+          "description": "User role",
+          "enum": ["admin", "accounts", "employee"]
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Whether employee is currently active"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp"
+        }
+      },
+      "required": ["payId", "nameBn", "designation", "role", "isActive"]
+    },
+    "loan": {
+      "title": "Loan",
+      "description": "House building loan allocation and running balance tracking",
+      "type": "object",
+      "properties": {
+        "employeeId": {
+          "type": "string",
+          "description": "Reference to Employee document ID",
+          "maxLength": 128
+        },
+        "payId": {
+          "type": "string",
+          "description": "Employee Pay ID",
+          "maxLength": 32
+        },
+        "employeeNameBn": {
+          "type": "string",
+          "description": "Bengali name of recipient",
+          "maxLength": 128
+        },
+        "employeeDesignation": {
+          "type": "string",
+          "description": "Recipient designation",
+          "maxLength": 128
+        },
+        "loanNo": {
+          "type": "string",
+          "description": "Loan reference number (e.g. HL-2019-0101)",
+          "maxLength": 64
+        },
+        "loanSource": {
+          "type": "string",
+          "description": "Source of loan (own PBS or other PBS)",
+          "enum": ["own", "other"]
+        },
+        "lendingPbs": {
+          "type": "string",
+          "description": "Lending PBS name",
+          "maxLength": 128
+        },
+        "allocationNo": {
+          "type": "string",
+          "description": "Allocation lot number (1st lot, 2nd lot expansion)",
+          "maxLength": 64
+        },
+        "disbursementAmount": {
+          "type": "number",
+          "description": "Total disbursed loan amount in BDT"
+        },
+        "disbursementDate": {
+          "type": "string",
+          "description": "Date of initial disbursement (YYYY-MM-DD)"
+        },
+        "interestRatePre2020": {
+          "type": "number",
+          "description": "Interest rate up to December 2019 (8%)"
+        },
+        "interestRatePost2020": {
+          "type": "number",
+          "description": "Interest rate from January 2020 onwards (7%)"
+        },
+        "monthlyInstallment": {
+          "type": "number",
+          "description": "Monthly payroll installment amount in BDT"
+        },
+        "principalBalance": {
+          "type": "number",
+          "description": "Current outstanding principal balance"
+        },
+        "interestBalance": {
+          "type": "number",
+          "description": "Current provisioned accrued interest balance"
+        },
+        "advanceBalance": {
+          "type": "number",
+          "description": "Advance paid balance beyond principal and interest"
+        },
+        "asOfDate": {
+          "type": "string",
+          "description": "Date as of which balances are reconciled (YYYY-MM-DD)"
+        },
+        "status": {
+          "type": "string",
+          "description": "Loan active status",
+          "enum": ["active", "suspended", "closed"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": [
+        "employeeId",
+        "payId",
+        "loanNo",
+        "loanSource",
+        "disbursementAmount",
+        "monthlyInstallment",
+        "principalBalance",
+        "status"
+      ]
+    },
+    "repayment": {
+      "title": "Repayment",
+      "description": "Monthly installment deduction record adhering to principal-first rule",
+      "type": "object",
+      "properties": {
+        "loanId": {
+          "type": "string",
+          "description": "Reference to Loan document ID",
+          "maxLength": 128
+        },
+        "employeeId": {
+          "type": "string",
+          "description": "Reference to Employee document ID",
+          "maxLength": 128
+        },
+        "payId": {
+          "type": "string",
+          "description": "Employee Pay ID",
+          "maxLength": 32
+        },
+        "employeeNameBn": {
+          "type": "string",
+          "description": "Employee name in Bengali",
+          "maxLength": 128
+        },
+        "repaymentMonth": {
+          "type": "string",
+          "description": "Repayment deduction month (YYYY-MM)",
+          "maxLength": 10
+        },
+        "repaymentDate": {
+          "type": "string",
+          "description": "Date deduction occurred (YYYY-MM-DD)"
+        },
+        "voucherNo": {
+          "type": "string",
+          "description": "Official Voucher reference number",
+          "maxLength": 64
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Total repayment deduction amount"
+        },
+        "principalPaid": {
+          "type": "number",
+          "description": "Amount credited to principal balance reduction"
+        },
+        "interestPaid": {
+          "type": "number",
+          "description": "Amount credited to accrued interest payoff"
+        },
+        "advancePaid": {
+          "type": "number",
+          "description": "Excess amount credited to advance balance"
+        },
+        "sourceType": {
+          "type": "string",
+          "description": "Source of deduction",
+          "enum": ["payroll", "inter_pbs", "manual"]
+        },
+        "notes": {
+          "type": "string",
+          "description": "Deduction notes and details",
+          "maxLength": 256
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "User or operator who posted entry",
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["loanId", "payId", "repaymentMonth", "totalAmount", "principalPaid", "interestPaid", "sourceType"]
+    },
+    "provision": {
+      "title": "Provision",
+      "description": "Monthly simple interest provision record (8% or 7% rule)",
+      "type": "object",
+      "properties": {
+        "loanId": {
+          "type": "string",
+          "description": "Reference to Loan document ID",
+          "maxLength": 128
+        },
+        "loanNo": {
+          "type": "string",
+          "description": "Loan reference number",
+          "maxLength": 64
+        },
+        "employeeId": {
+          "type": "string",
+          "description": "Employee reference ID",
+          "maxLength": 128
+        },
+        "payId": {
+          "type": "string",
+          "description": "Employee Pay ID",
+          "maxLength": 32
+        },
+        "employeeNameBn": {
+          "type": "string",
+          "description": "Employee name in Bengali",
+          "maxLength": 128
+        },
+        "provisionMonth": {
+          "type": "string",
+          "description": "Provision month (YYYY-MM)",
+          "maxLength": 10
+        },
+        "principalAmount": {
+          "type": "number",
+          "description": "Principal balance basis on which interest calculated"
+        },
+        "interestRate": {
+          "type": "number",
+          "description": "Interest rate applied (8 or 7)"
+        },
+        "monthlyInterestAmount": {
+          "type": "number",
+          "description": "Monthly interest added to interest balance"
+        },
+        "status": {
+          "type": "string",
+          "description": "Provision status",
+          "enum": ["posted", "draft"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["loanId", "provisionMonth", "principalAmount", "interestRate", "monthlyInterestAmount", "status"]
+    },
+    "bankAdvice": {
+      "title": "BankAdvice",
+      "description": "Inter-PBS remittance bank transfer advice and forwarding letter",
+      "type": "object",
+      "properties": {
+        "adviceNo": {
+          "type": "string",
+          "description": "Advice sequential identifier (e.g. BA-2026-001)",
+          "maxLength": 64
+        },
+        "memoNo": {
+          "type": "string",
+          "description": "Official PBS memo reference number",
+          "maxLength": 128
+        },
+        "adviceDate": {
+          "type": "string",
+          "description": "Date of advice (YYYY-MM-DD)"
+        },
+        "fromPbs": {
+          "type": "string",
+          "description": "Sender PBS name",
+          "maxLength": 128
+        },
+        "toPbs": {
+          "type": "string",
+          "description": "Recipient PBS name",
+          "maxLength": 128
+        },
+        "bankName": {
+          "type": "string",
+          "description": "Target bank and branch name",
+          "maxLength": 128
+        },
+        "accountNo": {
+          "type": "string",
+          "description": "Target bank account number",
+          "maxLength": 64
+        },
+        "routingNo": {
+          "type": "string",
+          "description": "Bank routing number",
+          "maxLength": 32
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Total transfer amount in BDT"
+        },
+        "amountInWordsBn": {
+          "type": "string",
+          "description": "Amount in Bengali words",
+          "maxLength": 256
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of remittance advice",
+          "enum": ["draft", "dispatched", "acknowledged"]
+        },
+        "agmFinanceName": {
+          "type": "string",
+          "description": "AGM (Finance) signatory name",
+          "maxLength": 128
+        },
+        "dgmName": {
+          "type": "string",
+          "description": "DGM signatory name",
+          "maxLength": 128
+        },
+        "gmName": {
+          "type": "string",
+          "description": "GM signatory name",
+          "maxLength": 128
+        },
+        "notes": {
+          "type": "string",
+          "description": "Remittance notes",
+          "maxLength": 256
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["adviceNo", "memoNo", "adviceDate", "fromPbs", "toPbs", "totalAmount", "status"]
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "PBS official identity, bank accounts, and signatories",
+      "type": "object",
+      "properties": {
+        "pbsNameBn": { "type": "string", "maxLength": 128 },
+        "pbsNameEn": { "type": "string", "maxLength": 128 },
+        "boardNameBn": { "type": "string", "maxLength": 128 },
+        "boardNameEn": { "type": "string", "maxLength": 128 },
+        "memoPrefix": { "type": "string", "maxLength": 128 },
+        "addressBn": { "type": "string", "maxLength": 256 },
+        "addressEn": { "type": "string", "maxLength": 256 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "email": { "type": "string", "format": "email" },
+        "website": { "type": "string", "maxLength": 128 },
+        "bankNameBn": { "type": "string", "maxLength": 128 },
+        "accountNo": { "type": "string", "maxLength": 64 },
+        "routingNo": { "type": "string", "maxLength": 32 },
+        "agmFinanceName": { "type": "string", "maxLength": 128 },
+        "dgmName": { "type": "string", "maxLength": 128 },
+        "gmName": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["pbsNameBn", "boardNameBn", "memoPrefix"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/user" },
+      "description": "User profiles authenticated via Firebase Auth"
+    },
+    "/employees/{employeeId}": {
+      "schema": { "$ref": "#/entities/employee" },
+      "description": "Master employee directory"
+    },
+    "/loans/{loanId}": {
+      "schema": { "$ref": "#/entities/loan" },
+      "description": "House building loan records and balances"
+    },
+    "/repayments/{repaymentId}": {
+      "schema": { "$ref": "#/entities/repayment" },
+      "description": "Monthly repayment deduction ledger"
+    },
+    "/provisions/{provisionId}": {
+      "schema": { "$ref": "#/entities/provision" },
+      "description": "Monthly simple interest provisions"
+    },
+    "/bankAdvices/{adviceId}": {
+      "schema": { "$ref": "#/entities/bankAdvice" },
+      "description": "Inter-PBS bank remittance advices"
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/settings" },
+      "description": "PBS official settings and letterhead"
+    }
+  }
+}

@@ -1,0 +1,159 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Health check test connection path
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && (request.auth.token.email_verified == true || request.auth.token.firebase.sign_in_provider == 'google.com');
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Admin bootstrap check: user email from runtime metadata or admins document
+    function isAdmin() {
+      return isVerified() && (
+        request.auth.token.email == 'agmf.npbs1@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // --- Validation Blueprints ---
+    function isValidUser(data) {
+      return data.email is string && data.email.size() <= 128 &&
+             data.role in ['admin', 'accounts', 'employee'];
+    }
+
+    function isValidEmployee(data) {
+      return data.payId is string && data.payId.size() <= 32 &&
+             data.nameBn is string && data.nameBn.size() <= 128 &&
+             data.designation is string && data.designation.size() <= 128 &&
+             data.role in ['admin', 'accounts', 'employee'] &&
+             data.isActive is bool;
+    }
+
+    function isValidLoan(data) {
+      return data.employeeId is string && data.employeeId.size() <= 128 &&
+             data.payId is string && data.payId.size() <= 32 &&
+             data.loanNo is string && data.loanNo.size() <= 64 &&
+             data.loanSource in ['own', 'other'] &&
+             data.disbursementAmount is number && data.disbursementAmount > 0 &&
+             data.monthlyInstallment is number && data.monthlyInstallment >= 0 &&
+             data.principalBalance is number && data.principalBalance >= 0 &&
+             data.status in ['active', 'suspended', 'closed'];
+    }
+
+    function isValidRepayment(data) {
+      return data.loanId is string && data.loanId.size() <= 128 &&
+             data.payId is string && data.payId.size() <= 32 &&
+             data.repaymentMonth is string && data.repaymentMonth.size() <= 10 &&
+             data.totalAmount is number && data.totalAmount > 0 &&
+             data.principalPaid is number && data.principalPaid >= 0 &&
+             data.interestPaid is number && data.interestPaid >= 0 &&
+             data.sourceType in ['payroll', 'inter_pbs', 'manual'];
+    }
+
+    function isValidProvision(data) {
+      return data.loanId is string && data.loanId.size() <= 128 &&
+             data.provisionMonth is string && data.provisionMonth.size() <= 10 &&
+             data.principalAmount is number &&
+             data.interestRate in [7, 8] &&
+             data.monthlyInterestAmount is number &&
+             data.status in ['posted', 'draft'];
+    }
+
+    function isValidBankAdvice(data) {
+      return data.adviceNo is string && data.adviceNo.size() <= 64 &&
+             data.memoNo is string && data.memoNo.size() <= 128 &&
+             data.fromPbs is string && data.fromPbs.size() <= 128 &&
+             data.toPbs is string && data.toPbs.size() <= 128 &&
+             data.totalAmount is number && data.totalAmount >= 0 &&
+             data.status in ['draft', 'dispatched', 'acknowledged'];
+    }
+
+    function isValidSettings(data) {
+      return data.pbsNameBn is string && data.pbsNameBn.size() <= 128 &&
+             data.boardNameBn is string && data.boardNameBn.size() <= 128 &&
+             data.memoPrefix is string && data.memoPrefix.size() <= 128;
+    }
+
+    // --- Users Collection ---
+    match /users/{userId} {
+      allow get: if isVerified() && (request.auth.uid == userId || isAdmin());
+      allow list: if isVerified();
+      allow create, update: if isVerified() && request.auth.uid == userId && isValidUser(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // --- Admins Collection ---
+    match /admins/{adminId} {
+      allow read: if isVerified();
+      allow write: if isAdmin();
+    }
+
+    // --- Employees Collection ---
+    match /employees/{employeeId} {
+      allow get, list: if isVerified();
+      allow create, update: if isVerified() && isValidId(employeeId) && isValidEmployee(incoming());
+      allow delete: if isAdmin() && isValidId(employeeId);
+    }
+
+    // --- Loans Collection ---
+    match /loans/{loanId} {
+      allow get, list: if isVerified();
+      allow create, update: if isVerified() && isValidId(loanId) && isValidLoan(incoming());
+      allow delete: if isAdmin() && isValidId(loanId);
+    }
+
+    // --- Repayments Collection ---
+    match /repayments/{repaymentId} {
+      allow get, list: if isVerified();
+      allow create, update: if isVerified() && isValidId(repaymentId) && isValidRepayment(incoming());
+      allow delete: if isAdmin() && isValidId(repaymentId);
+    }
+
+    // --- Provisions Collection ---
+    match /provisions/{provisionId} {
+      allow get, list: if isVerified();
+      allow create, update: if isVerified() && isValidId(provisionId) && isValidProvision(incoming());
+      allow delete: if isAdmin() && isValidId(provisionId);
+    }
+
+    // --- Bank Advices Collection ---
+    match /bankAdvices/{adviceId} {
+      allow get, list: if isVerified();
+      allow create, update: if isVerified() && isValidId(adviceId) && isValidBankAdvice(incoming());
+      allow delete: if isAdmin() && isValidId(adviceId);
+    }
+
+    // --- Settings Collection ---
+    match /settings/{settingId} {
+      allow get, list: if isVerified();
+      allow create, update: if isVerified() && isValidSettings(incoming());
+      allow delete: if false;
+    }
+  }
+}

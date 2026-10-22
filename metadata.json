@@ -1,0 +1,6 @@
+{
+  "name": "PBS Employee House Loan Management System",
+  "description": "Real-time online house loan management system with live dashboard, monthly interest provision (8%/7%), principal-first repayment priority, inter-PBS remittances, and employee self-service portal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
