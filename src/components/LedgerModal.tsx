@@ -333,10 +333,8 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({ loanId, loans = [], se
                   </div>
                 </div>
 
-                <div className="w-16 text-right hidden sm:block shrink-0">
-                  <span className="text-[9px] text-slate-400 block font-medium">স্মারক নং</span>
-                  <span className="text-[10px] text-slate-700 font-mono font-semibold">{settings.memoPrefix}</span>
-                </div>
+                {/* Empty spacer on right for balanced visual alignment with logo */}
+                <div className="w-14 hidden sm:block shrink-0" />
               </div>
 
               {/* Employee & Loan Meta Box */}

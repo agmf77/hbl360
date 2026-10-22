@@ -115,6 +115,9 @@ export interface BankAdvice {
   gmName: string;
   notes: string;
   createdAt: string;
+  monthDescription?: string;
+  employeeCount?: number;
+  isDeleted?: boolean;
 }
 
 export interface DemandNotice {

@@ -467,6 +467,24 @@ export default function App() {
     }
   };
 
+  // Delete / Cancel Bank Advice
+  const handleDeleteBankAdvice = async (id: string) => {
+    if (!confirm('আপনি কি এই প্রস্তুতকৃত ব্যাংক অ্যাডভাইসটি বাতিল করতে চান? এটি রিসাইকেল বিনে স্থানান্তরিত হবে।')) return;
+    try {
+      const res = await fetch(`/api/remittances/${id}?user=${currentUser.nameBn}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (data.success) {
+        await refreshAllData();
+      } else {
+        alert(data.message || 'অ্যাডভাইস বাতিল করা যায়নি।');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Create Demand Notice
   const handleCreateDemandNotice = async (noticeData: any) => {
     setIsProcessing(true);
@@ -713,6 +731,8 @@ export default function App() {
               currentUser={currentUser}
               onCreateAdvice={handleCreateBankAdvice}
               onUpdateStatus={handleUpdateBankAdviceStatus}
+              onDeleteAdvice={handleDeleteBankAdvice}
+              onRefresh={refreshAllData}
               isProcessing={isProcessing}
             />
           )}

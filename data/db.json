@@ -397,32 +397,73 @@
   "bankAdvices": [
     {
       "id": "adv-01",
-      "adviceNo": "BA-2026-09-01",
-      "memoNo": "২৭.১২.৬৮০০.৫৪২.০১.০২৪.২৬.১০১",
-      "adviceDate": "2026-10-02",
-      "fromPbs": "নরসিংদী পল্লী বিদ্যুৎ সমিতি-১",
-      "toPbs": "ঢাকা পল্লী বিদ্যুৎ সমিতি-১",
-      "bankName": "জনতা ব্যাংক পিএলসি, মাধবদী শাখা",
-      "accountNo": "২৪০০-১১৯২০২-৭",
-      "routingNo": "১৩৫২৬০৭৭৮",
-      "totalAmount": 14000,
-      "amountInWordsBn": "চৌদ্দ হাজার টাকা মাত্র",
+      "adviceNo": "BA/GPR-2/2026/016",
+      "memoNo": "২৭.১২.৩৩০০.৫৪২.০১.০২৪.২৬-১৩৬",
+      "adviceDate": "2026-10-21",
+      "fromPbs": "গাজীপুর পল্লী বিদ্যুৎ সমিতি-২",
+      "toPbs": "সকল পবিস",
+      "bankName": "জনতা ব্যাংক পিএলসি, রাজেন্দ্রপুর শাখা",
+      "accountNo": "৩৩০২-০৫১২০৩-৭",
+      "routingNo": "১৩৫২৬০৮৮৯",
+      "totalAmount": 40000,
+      "amountInWordsBn": "চল্লিশ হাজার টাকা মাত্র",
       "status": "dispatched",
+      "monthDescription": "অক্টোবর/২০২৬ হতে নভেম্বর/২০২৬ পর্যন্ত (২ মাস)",
+      "employeeCount": 2,
       "items": [
         {
           "loanId": "loan-04",
           "employeeId": "emp-03",
           "payId": "0103",
           "employeeNameBn": "জহিরুল হক",
-          "installmentMonth": "2026-09",
-          "amount": 14000
+          "installmentMonth": "অক্টোবর/২০২৬",
+          "amount": 25000
+        },
+        {
+          "loanId": "loan-02",
+          "employeeId": "emp-01",
+          "payId": "0101",
+          "employeeNameBn": "রফিকুল ইসলাম",
+          "installmentMonth": "নভেম্বর/২০২৬",
+          "amount": 15000
         }
       ],
       "agmFinanceName": "নাজমুন নাহার",
-      "dgmName": "রফিকুল ইসলাম",
+      "dgmName": "প্রকৌশলী মো: রফিকুল ইসলাম",
       "gmName": "প্রকৌশলী এ. কে. এম. সামসুল আলম",
-      "notes": "সহকারী প্রকৌশলী জনাব জহিরুল হক এর গৃহ ঋণ কিস্তি সেপ্টেম্বর/২০২৬ রেমিট্যান্স",
-      "createdAt": "2026-10-02T10:30:00.000Z"
+      "notes": "সকল পবিসে কর্মকর্তা/কর্মচারীদের কর্তিত কিস্তির অর্থ ব্যাংক ট্রান্সফার মূলে প্রেরণ",
+      "createdAt": "2026-10-21T10:15:00.000Z"
+    },
+    {
+      "id": "adv-02",
+      "adviceNo": "BA/GPR-2/2026/014",
+      "memoNo": "২৭.১২.৩৩০০.৫৪২.০১.০২৪.২৬-১৩৪",
+      "adviceDate": "2026-10-21",
+      "fromPbs": "গাজীপুর পল্লী বিদ্যুৎ সমিতি-২",
+      "toPbs": "কুমিল্লা পল্লী বিদ্যুৎ সমিতি-১",
+      "bankName": "জনতা ব্যাংক পিএলসি, চান্দিনা শাখা",
+      "accountNo": "২৪০০-১১৯২০২-৭",
+      "routingNo": "১৩৫২৬০৭৭৮",
+      "totalAmount": 15000,
+      "amountInWordsBn": "পনের হাজার টাকা মাত্র",
+      "status": "dispatched",
+      "monthDescription": "অক্টোবর/২০২৬ মাস",
+      "employeeCount": 1,
+      "items": [
+        {
+          "loanId": "loan-01",
+          "employeeId": "emp-01",
+          "payId": "0101",
+          "employeeNameBn": "রফিকুল ইসলাম",
+          "installmentMonth": "অক্টোবর/২০২৬",
+          "amount": 15000
+        }
+      ],
+      "agmFinanceName": "নাজমুন নাহার",
+      "dgmName": "প্রকৌশলী মো: রফিকুল ইসলাম",
+      "gmName": "প্রকৌশলী এ. কে. এম. সামসুল আলম",
+      "notes": "কুমিল্লা পবিস-১ এ বদলিকৃত কর্মকর্তা/কর্মচারীর গৃহ ঋণ কিস্তি কর্তনের অর্থ প্রেরণ",
+      "createdAt": "2026-10-21T09:30:00.000Z"
     }
   ],
   "demandNotices": [],

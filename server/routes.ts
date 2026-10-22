@@ -629,6 +629,16 @@ router.put('/remittances/:id/status', (req: Request, res: Response) => {
   }
 });
 
+router.delete('/remittances/:id', (req: Request, res: Response) => {
+  try {
+    const success = db.deleteBankAdvice(req.params.id, (req.query.user as string) || 'accounts');
+    if (!success) return res.status(404).json({ success: false, message: 'ব্যাংক অ্যাডভাইস পাওয়া যায়নি।' });
+    res.json({ success: true, message: 'ব্যাংক অ্যাডভাইসটি সফলভাবে বাতিল ও রিসাইকেল বিনে স্থানান্তর করা হয়েছে।' });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // --- Transferred Loans & Demand Notices (তাগাদা পত্র) ---
 router.get('/transferred-loans', (req: Request, res: Response) => {
   const transferredLoans = db.getTransferredLoans();
